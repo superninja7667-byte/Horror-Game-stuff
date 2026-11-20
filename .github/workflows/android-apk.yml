@@ -8,6 +8,8 @@ on:
       - 'build.gradle'
       - 'settings.gradle'
       - 'gradle.properties'
+      - 'rootbound_sentinel.fbx'
+      - 'tree-low-poly-lowpoly.zip'
       - '.github/workflows/android-apk.yml'
   workflow_dispatch:
 
