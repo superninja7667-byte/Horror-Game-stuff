@@ -8,7 +8,7 @@ This project wraps the browser game in a fullscreen Android WebView. It enables 
 2. Copy it to `app/src/main/assets/index.html` (the filename must be exactly `index.html`).
 3. Commit and push the file to the repository's `main` branch.
 
-The current GitHub repository did not contain the game HTML when this Android project was prepared; it only contained a README and a tree asset ZIP. The workflow therefore skips building until `index.html` is present rather than producing an empty app.
+The workflow checks for both `app/src/main/assets/index.html` and the repository-root `rootbound_sentinel.fbx`. It skips the Gradle build until both are present rather than producing an empty app.
 
 ## Build with GitHub Actions
 
