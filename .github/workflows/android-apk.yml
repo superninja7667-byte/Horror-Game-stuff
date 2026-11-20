@@ -1,0 +1,63 @@
+name: Build THE FOREST APK
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'app/**'
+      - 'build.gradle'
+      - 'settings.gradle'
+      - 'gradle.properties'
+      - '.github/workflows/android-apk.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
+
+      - name: Check for game HTML
+        id: source
+        shell: bash
+        run: |
+          if [ -s app/src/main/assets/index.html ]; then
+            echo "ready=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "ready=false" >> "$GITHUB_OUTPUT"
+            echo "::warning::APK build is waiting for app/src/main/assets/index.html. Upload THE_FOREST_Truck_Radio_Intro.html there and name it index.html."
+          fi
+
+      - name: Set up Java
+        if: steps.source.outputs.ready == 'true'
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Set up Android SDK
+        if: steps.source.outputs.ready == 'true'
+        uses: android-actions/setup-android@v3
+
+      - name: Set up Gradle
+        if: steps.source.outputs.ready == 'true'
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '9.6.0'
+
+      - name: Build debug APK
+        if: steps.source.outputs.ready == 'true'
+        run: gradle --no-daemon :app:assembleDebug
+
+      - name: Upload installable APK
+        if: steps.source.outputs.ready == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: THE-FOREST-Android-APK
+          path: app/build/outputs/apk/debug/app-debug.apk
+          if-no-files-found: error
+          retention-days: 14
