@@ -33,3 +33,11 @@ android {
 dependencies {
     implementation 'androidx.webkit:webkit:1.18.0'
 }
+
+
+// Keep the Rootbound Sentinel FBX at the repository root and copy it into app assets before building.
+tasks.register('copyGameModelAssets', Copy) {
+    from(rootProject.file('rootbound_sentinel.fbx'))
+    into(layout.projectDirectory.dir('src/main/assets'))
+}
+tasks.named('preBuild').configure { dependsOn('copyGameModelAssets') }
