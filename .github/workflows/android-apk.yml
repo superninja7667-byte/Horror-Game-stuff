@@ -25,11 +25,11 @@ jobs:
         id: source
         shell: bash
         run: |
-          if [ -s app/src/main/assets/index.html ]; then
+          if [ -s app/src/main/assets/index.html ] && [ -s rootbound_sentinel.fbx ]; then
             echo "ready=true" >> "$GITHUB_OUTPUT"
           else
             echo "ready=false" >> "$GITHUB_OUTPUT"
-            echo "::warning::APK build is waiting for app/src/main/assets/index.html. Upload THE_FOREST_Truck_Radio_Intro.html there and name it index.html."
+            echo "::warning::APK build is waiting for both app/src/main/assets/index.html and rootbound_sentinel.fbx. Upload the updated HTML as index.html and the FBX at the repository root."
           fi
 
       - name: Set up Java
@@ -52,6 +52,10 @@ jobs:
       - name: Copy supplied tree model pack into app assets
         if: steps.source.outputs.ready == 'true'
         run: cp tree-low-poly-lowpoly.zip app/src/main/assets/tree-low-poly-lowpoly.zip
+
+      - name: Copy supplied Rootbound Sentinel FBX into app assets
+        if: steps.source.outputs.ready == 'true'
+        run: cp rootbound_sentinel.fbx app/src/main/assets/rootbound_sentinel.fbx
 
       - name: Build debug APK
         if: steps.source.outputs.ready == 'true'
