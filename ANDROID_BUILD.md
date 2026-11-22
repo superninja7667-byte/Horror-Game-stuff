@@ -1,17 +1,28 @@
 # THE FOREST Android APK
 
-This project wraps the browser game in a fullscreen Android WebView. It enables JavaScript, hardware acceleration, local asset loading, audio playback, and the optional player-microphone permission used by the in-game test panel.
+This project wraps the game in a fullscreen Android WebView with JavaScript, hardware acceleration, bundled local assets, audio playback, and the optional microphone permission used by the in-game mic test panel.
 
-## Add the game source
+## Add the latest game HTML
 
-1. Download `THE_FOREST_Truck_Radio_Intro.html` from the ChatGPT build output.
-2. Copy it to `app/src/main/assets/index.html` (the filename must be exactly `index.html`).
-3. Commit and push the file to the repository's `main` branch.
+1. Download `THE_FOREST_Inventory_Menu_Update.html`.
+2. Upload it to `app/src/main/assets/index.html` (the filename must be exactly `index.html`).
 
-The workflow checks for both `app/src/main/assets/index.html` and the repository-root `rootbound_sentinel.fbx`. It skips the Gradle build until both are present rather than producing an empty app.
+## Add the player model
+
+The player FBX and supplied textures are split into three files because each part is kept below GitHub's browser-upload file-size limit:
+
+- `player-assets-pack.zip.part00`
+- `player-assets-pack.zip.part01`
+- `player-assets-pack.zip.part02`
+
+Upload all three files to the repository root. The workflow joins and extracts them into `app/src/main/assets/player-assets/`.
+
+The repository's `campfire.glb`, `rock.zip`, and tree ZIP are copied into app assets automatically. The Rootbound Sentinel FBX is optional for an APK build.
 
 ## Build with GitHub Actions
 
-Open the repository's **Actions** tab and run **Build THE FOREST APK**, or push a commit that changes the Android project/game HTML. Once `index.html` is present, the workflow builds a debug APK and uploads it as the `THE-FOREST-Android-APK` artifact. Download that artifact ZIP, extract it, and install `app-debug.apk` on the Android device.
+Open the repository's **Actions** tab and run **Build THE FOREST APK**, or push a commit that changes the Android project, game HTML, or listed assets. Once `app/src/main/assets/index.html` is present, the workflow builds a debug APK and uploads it as the `THE-FOREST-Android-APK` artifact.
 
-The debug APK is for testing and does not require release signing. The workflow also copies the repository's `tree-low-poly-lowpoly.zip` into the app assets so the imported Tree 1 and 2 FBX and Tree.png texture load locally. Three.js is currently loaded from jsDelivr, so the device needs an internet connection when opening the game. The radio dialogue is bundled in the HTML and does not require a separate audio file.
+Download the artifact ZIP, extract it, and install `app-debug.apk` on the Android device.
+
+The APK is a debug test build and does not require release signing. Three.js and its FBX/GLTF/JSZip loaders are currently loaded from jsDelivr, so an internet connection is required when playing. This is not yet a fully offline release package.
