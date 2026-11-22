@@ -4,7 +4,9 @@ on:
   push:
     branches: [main]
     paths:
-      - 'app/**'
+      - 'app/build.gradle'
+      - 'app/src/main/AndroidManifest.xml'
+      - 'app/src/main/java/**'
       - 'build.gradle'
       - 'settings.gradle'
       - 'gradle.properties'
