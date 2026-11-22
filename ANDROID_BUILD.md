@@ -22,9 +22,9 @@ The environment assets are already in the repository root and are copied into th
 
 - `tree-low-poly-lowpoly.zip` — supplied Tree 1 and 2 FBX and Tree.png
 - `campfire.glb` — new campfire model
-- `rock.zip` — new rock model pack and textures
+- `rock.zip` — new rock model pack and textures\n- `rootbound_sentinel.fbx` — Rootbound Sentinel monster model
 
-The Rootbound Sentinel FBX is optional.
+The Rootbound Sentinel FBX must also be uploaded to the repository root as `rootbound_sentinel.fbx`; it is included in the APK.
 
 ## Build and download
 
