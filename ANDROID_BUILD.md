@@ -1,40 +1,30 @@
 # THE FOREST — PC-first game and Android test APK
 
-The HTML/WebGL build is the primary PC development build. The Android wrapper is only an additional test target; it does not change the primary PC control layout or game design.
+The main game is being developed for PC / PCVR. The Android project exists only as a separate device-test wrapper. **An APK cannot be installed on an iPad**; use the HTML build in iPad Safari for browser testing. A native iPad app requires a separate iOS/Xcode build on macOS.
 
-## Upload the updated game HTML
+## Preserve existing GitHub assets
 
-1. Download `THE_FOREST_Asset_Texture_Inventory_Fix.html` from the ChatGPT update.
-2. Open `app/src/main/assets/` in this repository.
-3. Upload the HTML there and name it exactly `index.html`.
+Keep these existing root files in this repository:
+- `tree-low-poly-lowpoly.zip`
+- `campfire.glb`
+- `rock.zip`
 
-## Upload the player model pack
+## Add the repair build files
 
-Upload all three split files to the repository root (do not unzip them in GitHub):
+Download and extract `THE_FOREST_GitHub_Repair_Upload_Pack.zip`, then merge its contents into this repository root without deleting existing files. Upload the files at their included paths. Important new files are:
 
+- `app/src/main/assets/index.html` — repaired game HTML entrypoint
+- `rootbound_sentinel.fbx` — monster model
 - `player-assets-pack.zip.part00`
 - `player-assets-pack.zip.part01`
-- `player-assets-pack.zip.part02`
+- `player-assets-pack.zip.part02` — upload all three unchanged
 
-The workflow joins those parts, tests the ZIP, and extracts `player-assets/model/player.fbx` plus the full player texture set into the Android app assets.
+Each player chunk is below GitHub's per-file browser-upload size limit. Do not unzip or rename them. The workflow joins the chunks, verifies the ZIP, extracts the player FBX and texture maps, copies the existing tree/campfire/rock assets into the APK, verifies all required inputs, then compiles `:app:assembleDebug`.
 
-The environment assets are already in the repository root and are copied into the APK automatically:
+## Build the APK
 
-- `tree-low-poly-lowpoly.zip` — supplied Tree 1 and 2 FBX and Tree.png
-- `campfire.glb` — new campfire model
-- `rock.zip` — new rock model pack and textures
-- `rootbound_sentinel.fbx` — Rootbound Sentinel monster model
+Push the merged files to `main`, or open **Actions → Build THE FOREST APK → Run workflow**. The workflow now fails early with a missing-file message when an input asset is absent. A successful run means Gradle compiled the APK and the artifact upload step ran.
 
-The Rootbound Sentinel FBX must also be uploaded to the repository root as `rootbound_sentinel.fbx`; it is included in the APK.
+Download the `THE-FOREST-Android-APK` artifact ZIP from the successful run, extract it, then install `app-debug.apk` on an Android device.
 
-## Build and download
-
-After the HTML, all three player parts, and `rootbound_sentinel.fbx` have been uploaded, the **Build THE FOREST APK** GitHub Actions workflow runs automatically. The workflow now fails explicitly when a required file is missing, validates the ZIP assets, compiles the Android app, checks the APK exists, and publishes it as the `THE-FOREST-Android-APK` artifact.
-
-Open the repository's **Actions** tab, open the successful run, and download the artifact. Extract it and install `app-debug.apk` on a supported Android device.
-
-The APK build uses Java 17, Android SDK 36, Android Gradle Plugin 9.4.0, and Gradle 9.6.0. The project pins these compatible toolchain versions. Three.js and its model loaders are currently imported from jsDelivr, so a network connection is required when launching the game.
-
-## iPad note
-
-An Android APK cannot be installed on an iPad. For iPad testing, use the HTML build in Safari (or as a home-screen web app), or create a separate signed iOS `.ipa` build through Xcode/TestFlight.
+Three.js and the FBX/GLTF/ZIP loaders are loaded from jsDelivr, so the current build requires an internet connection. The APK is an Android test build, not an iPad or iOS package.
