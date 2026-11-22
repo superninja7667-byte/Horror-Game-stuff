@@ -13,7 +13,6 @@ on:
       - 'campfire.glb'
       - 'rock.zip'
       - 'player-assets-pack.zip.part*'
-      - '.github/workflows/android-apk.yml'
   workflow_dispatch:
 
 permissions:
@@ -26,64 +25,74 @@ jobs:
       - name: Checkout source
         uses: actions/checkout@v4
 
-      - name: Check for game HTML
-        id: source
+      - name: Verify game and all required model assets
         shell: bash
         run: |
-          if [ -s app/src/main/assets/index.html ]; then
-            echo "ready=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "ready=false" >> "$GITHUB_OUTPUT"
-            echo "::warning::APK build is waiting for app/src/main/assets/index.html. Upload the latest THE FOREST HTML there as index.html."
+          set -euo pipefail
+          required=(
+            "app/src/main/assets/index.html"
+            "player-assets-pack.zip.part00"
+            "player-assets-pack.zip.part01"
+            "player-assets-pack.zip.part02"
+            "tree-low-poly-lowpoly.zip"
+            "campfire.glb"
+            "rock.zip"
+          )
+          for file in "${required[@]}"; do
+            if [ ! -s "$file" ]; then
+              echo "::error::Required build input is missing: $file"
+              exit 1
+            fi
+          done
+
+          cat player-assets-pack.zip.part00 player-assets-pack.zip.part01 player-assets-pack.zip.part02 > /tmp/player-assets-pack.zip
+          unzip -tq /tmp/player-assets-pack.zip
+          unzip -oq /tmp/player-assets-pack.zip -d app/src/main/assets
+          test -s app/src/main/assets/player-assets/model/player.fbx || {
+            echo "::error::Player FBX was not found after extracting the player asset pack."
+            exit 1
+          }
+
+          unzip -tq tree-low-poly-lowpoly.zip
+          unzip -tq rock.zip
+          mkdir -p app/src/main/assets
+          cp tree-low-poly-lowpoly.zip app/src/main/assets/tree-low-poly-lowpoly.zip
+          cp campfire.glb app/src/main/assets/campfire.glb
+          cp rock.zip app/src/main/assets/rock.zip
+
+          if [ -s rootbound_sentinel.fbx ]; then
+            cp rootbound_sentinel.fbx app/src/main/assets/rootbound_sentinel.fbx
           fi
 
+          echo "All game and model assets verified and installed."
+
       - name: Set up Java
-        if: steps.source.outputs.ready == 'true'
         uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: '17'
 
       - name: Set up Android SDK
-        if: steps.source.outputs.ready == 'true'
         uses: android-actions/setup-android@v3
 
+      - name: Install Android compile SDK
+        run: sdkmanager "platforms;android-36" "build-tools;36.0.0"
+
       - name: Set up Gradle
-        if: steps.source.outputs.ready == 'true'
         uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: '9.6.0'
 
-      - name: Copy supplied environment assets into app assets
-        if: steps.source.outputs.ready == 'true'
+      - name: Build installable debug APK
+        run: gradle --no-daemon --stacktrace :app:assembleDebug
+
+      - name: Verify APK output
         shell: bash
         run: |
-          mkdir -p app/src/main/assets
-          [ ! -s tree-low-poly-lowpoly.zip ] || cp tree-low-poly-lowpoly.zip app/src/main/assets/tree-low-poly-lowpoly.zip
-          [ ! -s campfire.glb ] || cp campfire.glb app/src/main/assets/campfire.glb
-          [ ! -s rock.zip ] || cp rock.zip app/src/main/assets/rock.zip
-          [ ! -s rootbound_sentinel.fbx ] || cp rootbound_sentinel.fbx app/src/main/assets/rootbound_sentinel.fbx
-
-      - name: Reassemble and install the split player model pack
-        if: steps.source.outputs.ready == 'true'
-        shell: bash
-        run: |
-          shopt -s nullglob
-          parts=(player-assets-pack.zip.part*)
-          if [ ${#parts[@]} -gt 0 ]; then
-            cat "${parts[@]}" > /tmp/player-assets-pack.zip
-            unzip -oq /tmp/player-assets-pack.zip -d app/src/main/assets
-            echo "Installed player-assets into app assets."
-          else
-            echo "::warning::No split player-assets package found; the game will use its fallback when the player model is unavailable."
-          fi
-
-      - name: Build debug APK
-        if: steps.source.outputs.ready == 'true'
-        run: gradle --no-daemon :app:assembleDebug
+          test -s app/build/outputs/apk/debug/app-debug.apk
+          file app/build/outputs/apk/debug/app-debug.apk
 
       - name: Upload installable APK
-        if: steps.source.outputs.ready == 'true'
         uses: actions/upload-artifact@v4
         with:
           name: THE-FOREST-Android-APK
