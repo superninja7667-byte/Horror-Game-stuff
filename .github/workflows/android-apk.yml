@@ -4,9 +4,7 @@ on:
   push:
     branches: [main]
     paths:
-      - 'app/build.gradle'
-      - 'app/src/main/AndroidManifest.xml'
-      - 'app/src/main/java/**'
+      - 'app/**'
       - 'build.gradle'
       - 'settings.gradle'
       - 'gradle.properties'
@@ -15,6 +13,7 @@ on:
       - 'campfire.glb'
       - 'rock.zip'
       - 'player-assets-pack.zip.part*'
+      - '.github/workflows/android-apk.yml'
   workflow_dispatch:
 
 permissions:
@@ -27,45 +26,31 @@ jobs:
       - name: Checkout source
         uses: actions/checkout@v4
 
-      - name: Verify game and all required model assets
+      - name: Verify all required game and model files
         shell: bash
         run: |
           set -euo pipefail
           required=(
-            "app/src/main/assets/index.html"
-            "player-assets-pack.zip.part00"
-            "player-assets-pack.zip.part01"
-            "player-assets-pack.zip.part02"
-            "tree-low-poly-lowpoly.zip"
-            "campfire.glb"
-            "rock.zip"
-            "rootbound_sentinel.fbx"
+            app/src/main/assets/index.html
+            rootbound_sentinel.fbx
+            tree-low-poly-lowpoly.zip
+            campfire.glb
+            rock.zip
+            player-assets-pack.zip.part00
+            player-assets-pack.zip.part01
+            player-assets-pack.zip.part02
           )
+          missing=0
           for file in "${required[@]}"; do
             if [ ! -s "$file" ]; then
-              echo "::error::Required build input is missing: $file"
-              exit 1
+              echo "::error file=$file::Missing required THE FOREST asset: $file"
+              missing=1
             fi
           done
-
-          cat player-assets-pack.zip.part00 player-assets-pack.zip.part01 player-assets-pack.zip.part02 > /tmp/player-assets-pack.zip
-          unzip -tq /tmp/player-assets-pack.zip
-          unzip -oq /tmp/player-assets-pack.zip -d app/src/main/assets
-          test -s app/src/main/assets/player-assets/model/player.fbx || {
-            echo "::error::Player FBX was not found after extracting the player asset pack."
+          if [ "$missing" -ne 0 ]; then
+            echo "Upload the game HTML, player model chunks and Rootbound FBX before building."
             exit 1
-          }
-
-          unzip -tq tree-low-poly-lowpoly.zip
-          unzip -tq rock.zip
-          mkdir -p app/src/main/assets
-          cp tree-low-poly-lowpoly.zip app/src/main/assets/tree-low-poly-lowpoly.zip
-          cp campfire.glb app/src/main/assets/campfire.glb
-          cp rock.zip app/src/main/assets/rock.zip
-
-          cp rootbound_sentinel.fbx app/src/main/assets/rootbound_sentinel.fbx
-
-          echo "All game and model assets verified and installed."
+          fi
 
       - name: Set up Java
         uses: actions/setup-java@v4
@@ -76,24 +61,42 @@ jobs:
       - name: Set up Android SDK
         uses: android-actions/setup-android@v3
 
-      - name: Install Android compile SDK
-        run: sdkmanager "platforms;android-36" "build-tools;36.0.0"
-
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: '9.6.0'
 
-      - name: Build installable debug APK
-        run: gradle --no-daemon --stacktrace :app:assembleDebug
-
-      - name: Verify APK output
+      - name: Copy supplied environment and monster models
         shell: bash
         run: |
-          test -s app/build/outputs/apk/debug/app-debug.apk
-          file app/build/outputs/apk/debug/app-debug.apk
+          set -euo pipefail
+          mkdir -p app/src/main/assets
+          cp tree-low-poly-lowpoly.zip campfire.glb rock.zip rootbound_sentinel.fbx app/src/main/assets/
 
-      - name: Upload installable APK
+      - name: Reassemble and install supplied player FBX and textures
+        shell: bash
+        run: |
+          set -euo pipefail
+          cat player-assets-pack.zip.part00 player-assets-pack.zip.part01 player-assets-pack.zip.part02 > /tmp/player-assets-pack.zip
+          unzip -t /tmp/player-assets-pack.zip
+          unzip -oq /tmp/player-assets-pack.zip -d app/src/main/assets
+          test -s app/src/main/assets/player-assets/model/player.fbx
+
+      - name: Verify packaged game assets
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -s app/src/main/assets/index.html
+          test -s app/src/main/assets/player-assets/model/player.fbx
+          test -s app/src/main/assets/tree-low-poly-lowpoly.zip
+          test -s app/src/main/assets/campfire.glb
+          test -s app/src/main/assets/rock.zip
+          test -s app/src/main/assets/rootbound_sentinel.fbx
+
+      - name: Build installable debug APK
+        run: gradle --no-daemon :app:assembleDebug
+
+      - name: Upload APK artifact
         uses: actions/upload-artifact@v4
         with:
           name: THE-FOREST-Android-APK
