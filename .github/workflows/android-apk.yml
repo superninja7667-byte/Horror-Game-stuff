@@ -37,6 +37,7 @@ jobs:
             "tree-low-poly-lowpoly.zip"
             "campfire.glb"
             "rock.zip"
+            "rootbound_sentinel.fbx"
           )
           for file in "${required[@]}"; do
             if [ ! -s "$file" ]; then
@@ -60,9 +61,7 @@ jobs:
           cp campfire.glb app/src/main/assets/campfire.glb
           cp rock.zip app/src/main/assets/rock.zip
 
-          if [ -s rootbound_sentinel.fbx ]; then
-            cp rootbound_sentinel.fbx app/src/main/assets/rootbound_sentinel.fbx
-          fi
+          cp rootbound_sentinel.fbx app/src/main/assets/rootbound_sentinel.fbx
 
           echo "All game and model assets verified and installed."
 
