@@ -35,9 +35,12 @@ dependencies {
 }
 
 
-// Keep the Rootbound Sentinel FBX at the repository root and copy it into app assets before building.
-tasks.register('copyGameModelAssets', Copy) {
+// Copy the optional Rootbound Sentinel model for local builds. The APK workflow also copies
+// optional model/environment assets before Gradle starts. A missing optional monster file must
+// not block an APK build.
+tasks.register('copyRootboundSentinel', Copy) {
+    onlyIf { rootProject.file('rootbound_sentinel.fbx').exists() }
     from(rootProject.file('rootbound_sentinel.fbx'))
     into(layout.projectDirectory.dir('src/main/assets'))
 }
-tasks.named('preBuild').configure { dependsOn('copyGameModelAssets') }
+tasks.named('preBuild').configure { dependsOn('copyRootboundSentinel') }
