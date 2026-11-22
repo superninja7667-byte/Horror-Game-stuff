@@ -28,7 +28,7 @@ The Rootbound Sentinel FBX must also be uploaded to the repository root as `root
 
 ## Build and download
 
-After the HTML and all three player parts have been uploaded, the **Build THE FOREST APK** GitHub Actions workflow runs automatically. The workflow now fails explicitly when a required file is missing, validates the ZIP assets, compiles the Android app, checks the APK exists, and publishes it as the `THE-FOREST-Android-APK` artifact.
+After the HTML, all three player parts, and `rootbound_sentinel.fbx` have been uploaded, the **Build THE FOREST APK** GitHub Actions workflow runs automatically. The workflow now fails explicitly when a required file is missing, validates the ZIP assets, compiles the Android app, checks the APK exists, and publishes it as the `THE-FOREST-Android-APK` artifact.
 
 Open the repository's **Actions** tab, open the successful run, and download the artifact. Extract it and install `app-debug.apk` on a supported Android device.
 
