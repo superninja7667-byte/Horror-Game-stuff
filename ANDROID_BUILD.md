@@ -19,7 +19,7 @@ Download and extract `THE_FOREST_GitHub_Repair_Upload_Pack.zip`, then merge its 
 - `player-assets-pack.zip.part01`
 - `player-assets-pack.zip.part02` — upload all three unchanged
 
-Each player chunk is below GitHub's per-file browser-upload size limit. Do not unzip or rename them. The workflow joins the chunks, verifies the ZIP, extracts the player FBX and texture maps, copies the existing tree/campfire/rock assets into the APK, verifies all required inputs, then compiles `:app:assembleDebug`.
+Each player chunk is below GitHub's per-file browser-upload size limit. Do not unzip or rename them. The workflow joins the chunks, verifies the ZIP, extracts the player FBX and texture maps, copies the existing tree/campfire/rock assets and the complete local `three-runtime/` loader folder into the APK, verifies all required inputs, then compiles `:app:assembleDebug`.
 
 ## Build the APK
 
@@ -27,4 +27,4 @@ Push the merged files to `main`, or open **Actions → Build THE FOREST APK → 
 
 Download the `THE-FOREST-Android-APK` artifact ZIP from the successful run, extract it, then install `app-debug.apk` on an Android device.
 
-Three.js and the FBX/GLTF/ZIP loaders are loaded from jsDelivr, so the current build requires an internet connection. The APK is an Android test build, not an iPad or iOS package.
+The Three.js core and FBX/GLTF/OBJ/MTL/Reflector/ZIP loader modules are bundled locally. The game still downloads the model assets from the APK's local assets when present. The APK is an Android test build, not an iPad or iOS package.
