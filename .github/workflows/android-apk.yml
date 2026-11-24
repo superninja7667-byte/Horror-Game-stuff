@@ -5,6 +5,7 @@ on:
     branches: [main]
     paths:
       - 'app/**'
+      - 'three-runtime/**'
       - 'build.gradle'
       - 'settings.gradle'
       - 'gradle.properties'
@@ -72,6 +73,8 @@ jobs:
           set -euo pipefail
           mkdir -p app/src/main/assets
           cp tree-low-poly-lowpoly.zip campfire.glb rock.zip rootbound_sentinel.fbx app/src/main/assets/
+          rm -rf app/src/main/assets/three-runtime
+          cp -R three-runtime app/src/main/assets/three-runtime
 
       - name: Reassemble and install supplied player FBX and textures
         shell: bash
@@ -92,6 +95,10 @@ jobs:
           test -s app/src/main/assets/campfire.glb
           test -s app/src/main/assets/rock.zip
           test -s app/src/main/assets/rootbound_sentinel.fbx
+          test -s app/src/main/assets/three-runtime/three-global-bridge.js
+          test -s app/src/main/assets/three-runtime/examples/jsm/loaders/FBXLoader.js
+          test -s app/src/main/assets/three-runtime/examples/jsm/loaders/GLTFLoader.js
+          test -s app/src/main/assets/three-runtime/jszip.min.js
 
       - name: Build installable debug APK
         run: gradle --no-daemon :app:assembleDebug
