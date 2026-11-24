@@ -1,0 +1,31 @@
+name: Export THE FOREST Three.js runtime
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'three-runtime/three.min.js'
+      - '.github/workflows/export-three-runtime.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  export-runtime:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Package the vendored Three.js runtime
+        run: |
+          mkdir -p dist
+          cp three-runtime/three.min.js dist/three.min.js
+          printf 'THREE_RUNTIME_REVISION=160\n' > dist/README.txt
+      - name: Upload runtime artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: THE-FOREST-Three-r160
+          path: dist/
+          if-no-files-found: error
+          retention-days: 14
