@@ -1,10 +1,13 @@
-name: Export THE FOREST Three.js runtime
+name: Export THE FOREST Game Runtime and Models
 
 on:
   push:
     branches: [main]
     paths:
-      - 'three-runtime/three.min.js'
+      - 'three-runtime/**'
+      - 'tree-low-poly-lowpoly.zip'
+      - 'campfire.glb'
+      - 'rock.zip'
       - '.github/workflows/export-three-runtime.yml'
   workflow_dispatch:
 
@@ -12,20 +15,27 @@ permissions:
   contents: read
 
 jobs:
-  export-runtime:
+  export-game-assets:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-      - name: Package the vendored Three.js runtime
+
+      - name: Package local Three.js loaders and supplied environment models
+        shell: bash
         run: |
-          mkdir -p dist
-          cp three-runtime/three.min.js dist/three.min.js
-          printf 'THREE_RUNTIME_REVISION=160\n' > dist/README.txt
-      - name: Upload runtime artifact
+          set -euo pipefail
+          mkdir -p dist/three-runtime dist/models
+          cp -R three-runtime/. dist/three-runtime/
+          cp tree-low-poly-lowpoly.zip dist/models/
+          cp campfire.glb dist/models/
+          cp rock.zip dist/models/
+          printf 'THREE_RUNTIME_REVISION=160\nJSZIP_VERSION=3.10.1\n' > dist/README.txt
+
+      - name: Upload game runtime and environment asset pack
         uses: actions/upload-artifact@v4
         with:
-          name: THE-FOREST-Three-r160
+          name: THE-FOREST-Runtime-and-Models
           path: dist/
           if-no-files-found: error
           retention-days: 14
