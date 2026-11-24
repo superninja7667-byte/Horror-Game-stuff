@@ -1,30 +1,34 @@
 # THE FOREST — PC-first game and Android test APK
 
-The main game is being developed for PC / PCVR. The Android project exists only as a separate device-test wrapper. **An APK cannot be installed on an iPad**; use the HTML build in iPad Safari for browser testing. A native iPad app requires a separate iOS/Xcode build on macOS.
+The main game targets PC / PCVR. The Android project is a separate test wrapper. APKs install on Android/Quest Android devices, not iPads; use Safari for iPad browser testing or prepare a separate native iOS build later.
 
-## Preserve existing GitHub assets
+## Current model/runtime assets already in this repository
 
-Keep these existing root files in this repository:
-- `tree-low-poly-lowpoly.zip`
-- `campfire.glb`
-- `rock.zip`
+- `three-runtime/` — local Three.js r160 addon modules, bridge and JSZip 3.10.1.
+- `tree-low-poly-lowpoly.zip` — supplied Tree 1 and 2 FBX and Tree.png.
+- `campfire.glb` — supplied animated campfire (the GLB contains a native animation clip).
+- `rock.zip` — supplied nested OBJ model and rock color/normal/AO textures.
 
-## Add the repair build files
+## Upload the latest game and character assets
 
-Download and extract `THE_FOREST_GitHub_Repair_Upload_Pack.zip`, then merge its contents into this repository root without deleting existing files. Upload the files at their included paths. Important new files are:
+Download and extract `THE_FOREST_GitHub_APK_Upload_Pack.zip`. Merge its contents into this repository without deleting existing assets:
 
-- `app/src/main/assets/index.html` — repaired game HTML entrypoint
-- `rootbound_sentinel.fbx` — monster model
+- `app/src/main/assets/index.html` — latest Controls & Models game HTML
+- `rootbound_sentinel.fbx` — Rootbound Sentinel monster model
 - `player-assets-pack.zip.part00`
 - `player-assets-pack.zip.part01`
-- `player-assets-pack.zip.part02` — upload all three unchanged
+- `player-assets-pack.zip.part02`
 
-Each player chunk is below GitHub's per-file browser-upload size limit. Do not unzip or rename them. The workflow joins the chunks, verifies the ZIP, extracts the player FBX and texture maps, copies the existing tree/campfire/rock assets and the complete local `three-runtime/` loader folder into the APK, verifies all required inputs, then compiles `:app:assembleDebug`.
+Each player chunk is below the GitHub web uploader's per-file limit. Upload all three unchanged to the repository root. The workflow joins and validates them, then extracts the FBX and textures under `app/src/main/assets/player-assets/`.
+
+The Android workflow copies the local `three-runtime/` folder and existing tree/campfire/rock models into the APK. It validates all required game and model assets before invoking Gradle.
 
 ## Build the APK
 
-Push the merged files to `main`, or open **Actions → Build THE FOREST APK → Run workflow**. The workflow now fails early with a missing-file message when an input asset is absent. A successful run means Gradle compiled the APK and the artifact upload step ran.
+Push the files above to `main`. GitHub Actions will run **Build THE FOREST APK**. A successful workflow run includes the `:app:assembleDebug` compile step and publishes a downloadable `THE-FOREST-Android-APK` artifact. Download that artifact ZIP, extract it, and install `app-debug.apk` on an Android device.
 
-Download the `THE-FOREST-Android-APK` artifact ZIP from the successful run, extract it, then install `app-debug.apk` on an Android device.
+The APK is a debug test build, not a signed store release. The game models and Three.js addon modules are bundled locally; the standalone HTML still supports remote fallbacks when a PC build is served over localhost and network access is available.
 
-The Three.js core and FBX/GLTF/OBJ/MTL/Reflector/ZIP loader modules are bundled locally. The game still downloads the model assets from the APK's local assets when present. The APK is an Android test build, not an iPad or iOS package.
+## PC build
+
+Use `THE_FOREST_PC_Controls_Models_Build.zip` for PC testing. Extract the entire folder and run `START_THE_FOREST.bat` (Python 3 required). This serves the game at localhost so ES module loaders and relative 3D assets work correctly.
